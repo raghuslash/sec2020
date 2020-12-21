@@ -35,7 +35,7 @@ class Repair:
         rep_clean = keract.get_activations(self.bd_model, x_clean, layer_names=self.lname, nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True)[self.lname]
         rep_pois = keract.get_activations(self.bd_model, x_pois, layer_names=self.lname, nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True)[self.lname]
 
-        M = rep_clean - rep_clean.mean(axis=0)
+        M = rep_pois - rep_clean.mean(axis=0)
         
         u, s, vh = np.linalg.svd(M, full_matrices=False)
         self.vtop = vh[0].transpose()
@@ -62,8 +62,9 @@ def main():
     X, y = data_loader(input)
     y = np.argmax(model.predict(X), axis=1)
     y_filtered = G1.detect_and_filter(X, y)
-    np.savetxt('result.txt', y)
+    np.savetxt('result.txt', y, '%d')
     print(y_filtered)
+    # print((y_filtered==1283).sum()/len(y_filtered))
     return y_filtered
     
 if __name__ == "__main__":
