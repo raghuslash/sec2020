@@ -21,9 +21,9 @@ class Repair:
         self.clean_data_path=clean_data_path
         self.pois_data_path=pois_data_path
         self.lname = 'add_1'
-        self.target=0
+        self.target=5
         self.vtop=None
-        self.c_stds = 2.576  # 99 % interval
+        self.c_stds = 1.96 # 95 % interval
         self.thresh_L=None
         self.thresh_H=None
         self.detections=None
@@ -32,10 +32,9 @@ class Repair:
         x_clean, y_clean = data_loader(self.clean_data_path)
         x_pois, y_pois = data_loader(self.pois_data_path)
         self.target=y_pois[np.argmax(np.unique(y_pois, return_counts=True)[1])]
-        x_pois_mod = x_clean - x_pois # It's the same poisoning in all sets - so let's extract it by subtracting the clean
         rep_clean = keract.get_activations(self.bd_model, x_clean, layer_names=self.lname, nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True)[self.lname]
-        rep_pois = keract.get_activations(self.bd_model, x_pois_mod, layer_names=self.lname, nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True)[self.lname]
-        
+        rep_pois = keract.get_activations(self.bd_model, x_pois, layer_names=self.lname, nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True)[self.lname]
+
         M = rep_clean - rep_clean.mean(axis=0)
         
         u, s, vh = np.linalg.svd(M, full_matrices=False)
@@ -54,8 +53,8 @@ class Repair:
 
 def main():
     clean_data_path = 'data/clean_test_data.h5'
-    pois_data_path = 'data/sunglasses_poisoned_data.h5'
-    model_path = 'models/sunglasses_bd_net.h5'
+    pois_data_path = 'data/eyebrows_poisoned_data.h5'
+    model_path = 'models/multi_trigger_multi_target_bd_net.h5'
     model = keras.models.load_model(model_path)
     G1 = Repair(model_path, clean_data_path, pois_data_path)
     G1.explore()
