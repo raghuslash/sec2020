@@ -44,14 +44,19 @@ def main():
     model = keras.models.load_model(model_path)
 
     input = sys.argv[1]
-    x = plt.imread(input)
-    x = x[:,:,:3]
-    X = np.array([x])
+
+    if input.endswith('.h5'):
+        X, _ = data_loader(input)
+    else:
+        x = plt.imread(input)
+        x = x[:,:,:3]
+        X = np.array([x])
     y = np.argmax(model.predict(X), axis=1)
     y_filtered = t1.detect_and_filter(X, y) #Filter for trigger 1
     y_filtered = t2.detect_and_filter(X, y_filtered) # Filter for trigger 2
     y_filtered = t3.detect_and_filter(X, y_filtered) # Filter for trigger 3
     print(y_filtered)
+    print(f'Detected {(y_filtered==1283).sum()/y_filtered.shape[0]*100}% as poisoned.')
 
 if __name__ == "__main__":
     main()
